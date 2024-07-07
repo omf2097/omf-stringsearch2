@@ -15,8 +15,6 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { fas } from '@fortawesome/free-solid-svg-icons'
 import { far } from '@fortawesome/free-regular-svg-icons'
 
-import {loadData, useDB} from "@/services/db";
-
 library.add(fas);
 library.add(far);
 
@@ -42,10 +40,4 @@ async function loadVue() {
     app.mount('#app')
 }
 
-async function setupDB() {
-    const db = await useDB();
-    await loadData(db);
-}
-
-setupDB().then(loadVue).then(() => console.info("Load complete!"));
-
+loadVue().then(() => console.info("Vue loaded."));
