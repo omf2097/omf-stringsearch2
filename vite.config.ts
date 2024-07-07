@@ -6,7 +6,7 @@ import compression from "vite-plugin-compression2";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: "/projects/openomf/cards/",
+  base: "/projects/openomf/strings/",
   plugins: [
     vue(),
     compression({
