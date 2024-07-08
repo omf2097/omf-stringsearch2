@@ -12,6 +12,12 @@
   <v-alert v-else :text="tagDetails.desc" type="info" />
 </div>
 <div v-if="searchResults" class="accordion" id="#results">
+  <v-pagination
+      v-if="pages > 1"
+      v-model="page"
+      :length="pages"
+      :total-visible="7"
+  />
   <v-card
       class="item"
       variant="tonal"
@@ -20,7 +26,14 @@
       :title="`${script.source_file} - Animation ${script.source_animation}`"
       :subtitle="script.original"
   >
-    <v-list density="compact" v-model:opened="openedFrames">
+    <template v-slot:append>
+      <v-btn :icon="toggleCardIcon(script_index)" @click="toggleCard(script_index)"></v-btn>
+    </template>
+    <v-list
+        density="compact"
+        v-model:opened="openedFrames"
+        v-if="cardOpened(script_index)"
+    >
       <v-list-group
           v-for="(frame, frame_index) in script.data"
           :key="`${script_index}_${frame_index}`"
@@ -50,6 +63,12 @@
       </v-list-group>
     </v-list>
   </v-card>
+  <v-pagination
+      v-if="pages > 1"
+      v-model="page"
+      :length="pages"
+      :total-visible="7"
+  />
 </div>
 </template>
 
@@ -62,8 +81,13 @@ import type {Scripts, TagType} from "@/services/types";
 const db = ref<IDBPDatabase|null>(null);
 const search = ref<string>("");
 const tagDetails = ref<TagType|null>(null);
-const searchResults = ref<Scripts|null>(null);
+const searchResults = ref<Scripts>([]);
+const searchRefs = ref<number[]>([]);
 const openedFrames = ref<string[]>([]);
+const openedCards = ref<Set<number>>(new Set());
+const page = ref(1);
+const pages = ref(1);
+const pageSize = ref(10);
 
 const tags = ref<string[]>([]);
 const descriptions = ref<Map<string, string>>(new Map());
@@ -75,6 +99,25 @@ function itemClass(tag: string): string|undefined {
   return undefined;
 }
 
+function toggleCard(index: number): void {
+  if (cardOpened(index)) {
+    openedCards.value.delete(index)
+  } else {
+    openedCards.value.add(index);
+  }
+}
+
+function cardOpened(index: number): boolean {
+  return openedCards.value.has(index);
+}
+
+function toggleCardIcon(index: number): string {
+  if (cardOpened(index)) {
+    return "fa fa-caret-down";
+  }
+  return "fa fa-caret-up";
+}
+
 function itemDesc(tag: string): string {
   const value = descriptions.value.get(tag);
   return value ?? "";
@@ -82,15 +125,26 @@ function itemDesc(tag: string): string {
 
 async function doSearch() {
   if (db.value == null || search.value == null) {
-    searchResults.value = null;
+    searchResults.value = [];
     tagDetails.value = null;
     return;
   }
-  const result = await getTag(db.value, search.value);
-  tagDetails.value = result ?? null;
+  const [tag, refs] = await Promise.all([
+    getTag(db.value, search.value),
+    getRefs(db.value, search.value),
+  ]);
+  tagDetails.value = tag ?? null;
+  searchRefs.value = refs;
+  pages.value = Math.ceil(refs.length / pageSize.value);
+  page.value = 1;
+  await updateView();
+}
 
-  const refs = await getRefs(db.value, search.value);
-  const scripts = await Promise.all(refs.map(ref => getScript(db.value!, ref)));
+async function updateView() {
+  const start = (page.value - 1) * pageSize.value;
+  const end = start + pageSize.value;
+  const lookup = searchRefs.value.slice(start, end);
+  const scripts = await Promise.all(lookup.map(ref => getScript(db.value!, ref)));
   const opened = new Set<string>();
 
   for (const [script_index, script] of scripts.entries()) {
@@ -98,15 +152,18 @@ async function doSearch() {
       for (const tag of frame.tags) {
         if(tag.key === search.value) {
           opened.add(`${script_index}_${frame_index}`);
+          break;
         }
       }
     }
   }
 
   openedFrames.value = Array.from(opened);
+  openedCards.value.clear();
   searchResults.value = scripts;
 }
 
+watch(page, updateView);
 watch(search, doSearch);
 onMounted(async () => {
   db.value = await useDB();
