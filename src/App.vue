@@ -8,7 +8,7 @@
   </v-container>
   <v-layout v-else class="container">
     <v-main>
-      <h1>String tool</h1>
+      <h1>One Must Fall 2097 Script search</h1>
       <RouterView />
     </v-main>
   </v-layout>
