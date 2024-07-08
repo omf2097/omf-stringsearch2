@@ -34,33 +34,41 @@
         v-model:opened="openedFrames"
         v-if="cardOpened(script_index)"
     >
-      <v-list-group
-          v-for="(frame, frame_index) in script.data"
-          :key="`${script_index}_${frame_index}`"
-          :value="`${script_index}_${frame_index}`"
-      >
-        <template v-slot:activator="{ props }">
-          <v-list-item
-              v-bind="props"
-              :title="`${frame.key}${frame.duration}`"
-          />
-        </template>
-
+      <template v-for="(frame, frame_index) in script.data">
         <v-list-item
-            v-for="(tag, tag_index) in frame.tags"
-            :class="itemClass(tag.key)"
-            :key="`${script_index}_${frame_index}_${tag_index}`"
+            v-if="frame.tags.length == 0"
+            :key="`${script_index}_${frame_index}_na`"
+            :title="`${frame.key}${frame.duration}`"
         >
-          <v-container fluid class="ma-0 pa-0">
-            <v-row dense>
-              <v-col cols="1">{{ tag.key }}</v-col>
-              <v-col cols="1">{{ tag.value }}</v-col>
-              <v-col cols="3"><span v-for="errata in tag.erratas" :key="errata">{{ errata }}</span></v-col>
-              <v-col>{{ itemDesc(tag.key) }}</v-col>
-            </v-row>
-          </v-container>
         </v-list-item>
-      </v-list-group>
+        <v-list-group
+            v-else
+            :key="`${script_index}_${frame_index}`"
+            :value="`${script_index}_${frame_index}`"
+        >
+          <template v-slot:activator="{ props }">
+            <v-list-item
+                v-bind="props"
+                :title="`${frame.key}${frame.duration}`"
+            />
+          </template>
+
+          <v-list-item
+              v-for="(tag, tag_index) in frame.tags"
+              :class="itemClass(tag.key)"
+              :key="`${script_index}_${frame_index}_${tag_index}`"
+          >
+            <v-container fluid class="ma-0 pa-0">
+              <v-row dense>
+                <v-col cols="1">{{ tag.key }}</v-col>
+                <v-col cols="1">{{ tag.value }}</v-col>
+                <v-col cols="3"><span v-for="errata in tag.erratas" :key="errata">{{ errata }}</span></v-col>
+                <v-col>{{ itemDesc(tag.key) }}</v-col>
+              </v-row>
+            </v-container>
+          </v-list-item>
+        </v-list-group>
+      </template>
     </v-list>
   </v-card>
   <v-pagination
