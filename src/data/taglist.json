@@ -222,7 +222,7 @@
     {
         "tag": "bn",
         "has_param": true,
-        "desc": ""
+        "desc": "Unblockable move"
     },
     {
         "tag": "bo",
@@ -497,7 +497,7 @@
     {
         "tag": "pp",
         "has_param": true,
-        "desc": "Duration of HAR palette effect in ticks."
+        "desc": "Effect intensity"
     },
     {
         "tag": "ps",
@@ -507,17 +507,17 @@
     {
         "tag": "ptd",
         "has_param": true,
-        "desc": "n < 128 Effect intensity."
+        "desc": "Effect fade-in time in ticks (0-127)"
     },
     {
         "tag": "ptp",
         "has_param": true,
-        "desc": "N < 128"
+        "desc": "Effect constant max-value time in ticks (0-127)"
     },
     {
         "tag": "ptr",
         "has_param": true,
-        "desc": "N < 128"
+        "desc": "Effect fade-out time in ticks (0-127)"
     },
     {
         "tag": "q",

@@ -3,8 +3,11 @@ import {fetchStrings, fetchTags} from "@/services/api";
 import type {Script, TagType, TagTypes} from "@/services/types";
 
 export async function useDB() {
-    return openDB('data', 1, {
+    return openDB('data', 2, {
         upgrade (db) {
+            db.deleteObjectStore('tags');
+            db.deleteObjectStore('strings');
+            db.deleteObjectStore('tagsToStrings');
             if (!db.objectStoreNames.contains('tags')) {
                 console.info("Creating tags database");
                 db.createObjectStore('tags', {keyPath: 'tag'});
