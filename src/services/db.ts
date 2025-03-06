@@ -2,12 +2,20 @@ import {type IDBPDatabase, openDB} from "idb";
 import {fetchStrings, fetchTags} from "@/services/api";
 import type {Script, TagType, TagTypes} from "@/services/types";
 
+function deleteStore(db: IDBPDatabase, store: string) {
+    try {
+        db.deleteObjectStore(store);
+    } catch (e) {
+        console.warn(`Object store ${store} does not exist -- nothing to delete.`)
+    }
+}
+
 export async function useDB() {
     return openDB('data', 2, {
         upgrade (db) {
-            db.deleteObjectStore('tags');
-            db.deleteObjectStore('strings');
-            db.deleteObjectStore('tagsToStrings');
+            deleteStore(db, "tags");
+            deleteStore(db, "strings");
+            deleteStore(db, "tagsToStrings");
             if (!db.objectStoreNames.contains('tags')) {
                 console.info("Creating tags database");
                 db.createObjectStore('tags', {keyPath: 'tag'});
